@@ -1,0 +1,15 @@
+[Unit]
+Description=MariaDB pour Wordpress
+Requires=docker.socket
+After=docker.socket
+
+[Service]
+ExecStartPre=/bin/sh -c "mkdir -p /units/dbdir"
+ExecStartPre=/bin/sh -c "docker history mariadb:latest >/dev/null 2>&1 || docker pull mariadb:latest"
+ExecStartPre=/bin/sh -c "docker inspect wp-db >/dev/null 2>&1 && docker rm -f wp-db || true"
+ExecStart=/usr/bin/docker run --name wp-db -v /units/dbdir:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=dbpassword -p 3306:3306 mariadb
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

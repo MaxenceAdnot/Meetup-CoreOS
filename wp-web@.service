@@ -1,0 +1,17 @@
+[Unit]
+Description=Wordpress
+Requires=docker.socket
+After=docker.socket
+
+[Service]
+ExecStartPre=/bin/sh -c "docker history wordpress:latest >/dev/null 2>&1 || docker pull wordpress:latest"
+ExecStartPre=/bin/sh -c "docker inspect wp-web%i >/dev/null 2>&1 && docker rm -f wp-web%i || true"
+ExecStart=/usr/bin/docker run --name wp-web%i -p 8090:80 -e WORDPRESS_DB_HOST=<IP-db>:3306 -e WORDPRESS_DB_USER=root -e WORDPRESS_DB_PASSWORD=dbpassword wordpress
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Conflicts=wp*

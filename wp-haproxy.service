@@ -1,0 +1,18 @@
+[Unit]
+Description=HaProxy pour Wordpress
+Requires=docker.socket
+After=docker.socket
+
+[Service]
+ExecStartPre=/bin/sh -c "docker history haproxy:1.5 >/dev/null 2>&1 || docker pull haproxy:1.5"
+ExecStartPre=/bin/sh -c "docker inspect wp-haproxy >/dev/null 2>&1 && docker rm -f wp-haproxy || true"
+ExecStart=/usr/bin/docker run --name wp-haproxy -v /units/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro -p 80:80 haproxy:1.5
+ExecStopPost=-/usr/bin/docker rm -f wp-haproxy
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineOf=wp-db.service
